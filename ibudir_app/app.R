@@ -82,11 +82,13 @@
         
  
         observe(p)
-        p <- ggplot(aggr_data, aes(Group.1, x, group = Group.2))
+        p <- ggplot(aggr_data, aes(Group.1, x, group = Group.2)) +
+                scale_colour_manual(values=c("#999999", "#E69F00", "#56B4E9"), 
+                                  labels=c("Control", "Treatment 1", "Treatment 2"))
         p + geom_line() +
                 theme(axis.title.y=element_text(margin=margin(0,20,0,0))) +
                 scale_y_continuous(labels=function(x) format(x, big.mark = ".", scientific = FALSE)) +
-                labs(x = "Dagsetning", y = y.name, labels=c("Meðaltal", "101", "103")) +
+                 #labs(x = "Dagsetning", y = y.name, labels=c("Meðaltal", "101", "103")) +
                 geom_line(data = aggr_data, aes(colour = factor(Group.2))) +
                 xlim(dagsetningar)
   
