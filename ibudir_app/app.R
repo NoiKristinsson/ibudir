@@ -12,7 +12,6 @@
         
         ui <- fluidPage(
                 
-                verd <- 
                 titlePanel("Þróun á íbúðarverði"),
                 
                 sidebarLayout(position = "left",
@@ -55,44 +54,46 @@
                 prep_trend <- prep_trend[prep_trend$size > input$size[1] & prep_trend$size < input$size[2],]
                 prep_trend$postnr <- 999
                 
-              
-                #aggr_mean$Group.2 <- rep(999,nrow(aggr_mean))
-                #aggr_mean[,c(1,3,2)]
-                #merge(aggr_data, aggr_mean)
 
                 cleandata <- rbind(cleandata, prep_trend)
                 
                 prep <- cleandata[cleandata$postnr %in% input$checkGroup,]
                 prep <- prep[prep$size > input$size[1] & prep$size < input$size[2],]
                 
+                
+                
                 if(input$dataType == 1)
                         {
                 aggr_data <- aggregate(prep$verd, by=list(prep$date, prep$postnr), mean)
+                aggr_data$Group.2 <- paste("postnr ", aggr_data$Group.2, sep = "")
+                aggr_data[aggr_data$Group.2 == "postnr 999"] <- "Meðaltal"
                 y.name <- "Verð"
                 
                 } else {
                 
                 aggr_data <- aggregate(prep$fermverd, by=list(prep$date, prep$postnr), mean)
+                aggr_data$Group.2 <- paste("postnr ", aggr_data$Group.2, sep = "")
+                aggr_data[aggr_data == "postnr 999"] <- "Meðaltal"
                 y.name <- "Fermetraverð"
                 
                 ## Hér er plot af Aggregated gögnum
                         }
                 
+                aggr_data$Group.2 <- factor(aggr_data$Group.2,
+                                            levels = c("Meðaltal", "postnr 101", "postnr 103", "postnr 104", "postnr 105"),
+                                            ordered = TRUE)                
         options(scipen=5)
         
  
         observe(p)
-        p <- ggplot(aggr_data, aes(Group.1, x, group = Group.2)) +
-                scale_colour_manual(values=c("#999999", "#E69F00", "#56B4E9"), 
-                                  labels=c("Control", "Treatment 1", "Treatment 2"))
-        p + geom_line() +
-                theme(axis.title.y=element_text(margin=margin(0,20,0,0))) +
-                scale_y_continuous(labels=function(x) format(x, big.mark = ".", scientific = FALSE)) +
-                 #labs(x = "Dagsetning", y = y.name, labels=c("Meðaltal", "101", "103")) +
-                geom_line(data = aggr_data, aes(colour = factor(Group.2))) +
-                xlim(dagsetningar)
-  
-                      
+        ggplot(aggr_data,
+               aes_string(x = "Group.1", y = "x", group = "Group.2",
+                          colour = "Group.2")) +
+                geom_line() + 
+                scale_colour_manual(values=c("#FF0000", "#E69F00", "#56B4E9", "#454345", "#949353"),
+                                    guide = guide_legend(title = "Postnr"), drop = FALSE) +
+                theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
+      
                
         })   
                 } #the server
