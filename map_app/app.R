@@ -26,7 +26,7 @@ ui <- fluidPage(
                                         value = 101)),
                 
                 column(2, numericInput("fermetrar", 
-                                       label = h3("fermetrar"), 
+                                       label = h3("Fermetrar"), 
                                        step = 0.1, 
                                        value = 75.5,
                                        min= 101)),
@@ -136,9 +136,6 @@ server <- function(input, output) {
                 streetMap() 
         })
         
-        
-        
 }
 
 shinyApp(ui = ui, server = server) # this launches your app
-
