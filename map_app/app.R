@@ -29,9 +29,21 @@ ui <- fluidPage(
                                        label = h3("fermetrar"), 
                                        step = 0.1, 
                                        value = 75.5,
-                                       min= 101))),
+                                       min= 101)),
+                br(), br(), br(),
+                column(2, fluidRow(actionButton("goButton", "Leita")))),
         
-        fluidRow(actionButton("goButton", "Go!"))
+        fluidRow(helpText("Skrifaðu Götu, húsnúmer, póstnúmer og stærð og fáðu meðalverðið á svæðinu í kring.",
+                          br(),
+                          "Það kemur villa ef:",
+                          br(),
+                          "Ekki nógu mörg hús hafa verið til sölu á svæðinu",
+                          br(),
+                          "Vitlaust heimilisfang er slegið inn.",
+                          br(),
+                          "Við útreikning á stærð er miða við +/- 15 fm2"
+                          ))
+        
         
         
 )
@@ -105,7 +117,7 @@ server <- function(input, output) {
                 length(for.mean)
                 the.mean <- mean(for.mean)
                 the.mean <- prettyNum(the.mean, big.mark=".", decimal.mark = ",", scientific=FALSE)
-                the.mean <- paste0(the.mean, "kr.-")
+                the.mean <- paste0("Meðalverð á svæðinu (sjá kort) er: ", the.mean, "kr.-")
                 print(the.mean)
                 
         })
