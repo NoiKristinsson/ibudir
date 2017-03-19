@@ -1,5 +1,10 @@
 library(shiny)
 library(ggmap)
+
+data_clean <- read.csv("data/data_clean.csv")
+street.db <- read.csv("data/iceland_streets.csv")
+punktar_react <- reactiveValues()
+
 ui <- fluidPage(
         fluidRow(div(align="center", titlePanel("Meðal verð á íbúðum í þessu svæði"))),
         
@@ -39,24 +44,14 @@ ui <- fluidPage(
 server <- function(input, output) {
         
         
-        streetMap <- eventReactive(input$goButton, {
-                
-                print("Test button map")
-                mymap <- ggmap(get_map(c(v.punktur, s.punktur , a.punktur, n.punktur), source = "google"))
-                print(mymap)
-        })
-        
-        output$streetMap <- renderPlot({
-                streetMap() 
-        })
+       
         
         # builds a reactive expression that only invalidates 
         # when the value of input$goButton becomes out of date 
         # (i.e., when the button is pressed)
         ntext <- eventReactive(input$goButton, {
                 print(input$fermetrar)
-                data_clean <- read.csv("data/data_clean.csv")
-                street.db <- read.csv("data/iceland_streets.csv")
+
                 
                 
                 fm2.minna <- input$fermetrar - 15
@@ -92,6 +87,11 @@ server <- function(input, output) {
                 s.punktur <- center_lat - lat300
                 n.punktur <- center_lat + lat300
                 
+                punktar_react$a <- a.punktur
+                punktar_react$v <- v.punktur
+                punktar_react$s <- s.punktur
+                punktar_react$n <- n.punktur
+                
                 # a.punktur <- -21.9003
                 # v.punktur <- -21.91271
                 # s.punktur <- 64.12896
@@ -110,9 +110,18 @@ server <- function(input, output) {
                 
         })
         
+        streetMap <- eventReactive(input$goButton, {
+       
+                mymap <- ggmap(get_map(c(punktar_react$v, punktar_react$s, punktar_react$a, punktar_react$n), source = "google"))
+                print(mymap)
+        })
         
         output$nText <- renderText({
                 ntext()
+        })
+    
+        output$streetMap <- renderPlot({
+                streetMap() 
         })
         
         
