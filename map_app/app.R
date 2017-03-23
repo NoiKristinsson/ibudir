@@ -1,3 +1,6 @@
+
+#### MAP FORRITIÐ
+
 library(shiny)
 library(ggmap)
 

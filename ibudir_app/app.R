@@ -1,3 +1,5 @@
+### LÍNURITIÐ
+
 library(shiny)
 library(ggplot2)
         
