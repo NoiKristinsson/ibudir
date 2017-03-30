@@ -21,6 +21,7 @@ for (file in file_list){
 ## 5) Fermetra verð undir 50.000 var í yfirgnæfandi tilfellum óbyggð hús og voru tekin út úr jöfnunni.
 ## 6) margt yfir 500 fm hefur verið að valda skekkju þar sem það eru oft lóðir innifaldar og var ákveðið að draga mörking þar
 ## 7) íbúðir yfir 169 milljónir voru oft á tíðum outliers sem hægt var að útskýra, t.a.m var oft lítið að marka fermetrafjölda og þess háttar
+## 8) íbúðir sem voru með yfir 900.000 krónur á fermetrann til að taka út outliers sem ég gat ekki staðfest
 
 ibudir.clean <- subset(ibudir.data, 
                         postnr != 1000 & 
@@ -33,7 +34,8 @@ ibudir.clean <- subset(ibudir.data,
                                herbergi > 0 &
                                fermverd > 50000 &
                                size < 500 &
-                               verd < 151000000
+                               verd < 151000000 &
+                               fermverd < 900000 
                                 
                                )
 
