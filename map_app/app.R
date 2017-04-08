@@ -1,4 +1,3 @@
-
 #### MAP FORRITIÐ
 
 library(shiny)
@@ -8,12 +7,17 @@ data_clean <- read.csv("data/data_clean.csv")
 street.db <- read.csv("data/iceland_streets.csv")
 punktar_react <- reactiveValues()
 
+
+
+
+
 ui <- fluidPage(
         fluidRow(div(align="center", titlePanel("Meðal verð á íbúðum í þessu svæði"))),
         
         fluidRow(mainPanel(plotOutput("streetMap"))),
         fluidRow(mainPanel(
-                verbatimTextOutput("nText")
+                #verbatimTextOutput("nText")
+                htmlOutput("nText")
                 
         )),
         fluidRow(
@@ -65,9 +69,7 @@ server <- function(input, output) {
         # when the value of input$goButton becomes out of date 
         # (i.e., when the button is pressed)
         ntext <- eventReactive(input$goButton, {
-                print(input$fermetrar)
-
-                
+                #print(input$fermetrar)
                 
                 fm2.minna <- input$fermetrar - 15
                 fm2.staerra <- input$fermetrar + 15
@@ -81,13 +83,19 @@ server <- function(input, output) {
                 
                 center_long <- street.db$LON[street.db$POSTCODE == input$postnr & street.db$NUMBER == street.number & street.db$STREET == street.name]
                 center_lat <- street.db$LAT[street.db$POSTCODE == input$postnr & street.db$NUMBER == street.number & street.db$STREET == street.name]
+                count <- 1
+                lat300 <- 0
+                long300 <- 0
+                count <- 0
                 
+                repeat{
                 ##  0,002701 er jafnt og 300m á lat
                 ##  0,006208 er jafnt og 300m á long
                 
-                lat300 <- 0.002701
-                long300 <- 0.006208
-                
+                lat300 <- lat300 + 0.002701
+                long300 <- long300 + 0.006208
+                count <- count + 1
+                #print(lat300)
                 
                 ## Create the square around the center house
                 ## Vestur er -21 og áfram mínus --- Austur er því -21 og plúsa við það
@@ -114,30 +122,48 @@ server <- function(input, output) {
                 ## skila lista af götum sem eru innan þessara fjögurra punkta
                 gotulisti <- unique(droplevels(street.db$STREET[street.db$LAT < n.punktur & street.db$LAT > s.punktur & street.db$LON < a.punktur & street.db$LON > v.punktur ]))
                 gotulisti <- as.list(levels(gotulisti))
+                #print(paste0("fjoldi husa ", length(gotulisti)))
                 
+               
                 
                 for.mean <- data_clean$verd[data_clean$gotuheiti %in% gotulisti & data_clean$size > fm2.minna & data_clean$size < fm2.staerra]
-                length(for.mean)
+                fjoldi.husa <- length(for.mean)
+                #print(count)
+                if(count > 1 | length(for.mean) > 5){
+                        break
+                        }
+                }
+                
                 the.mean <- mean(for.mean)
                 the.mean <- prettyNum(the.mean, big.mark=".", decimal.mark = ",", scientific=FALSE)
                 the.mean <- paste0("Meðalverð á svæðinu (sjá kort) er: ", the.mean, "kr.-")
-                print(the.mean)
+                area.searched <- count * 300
+                #area <- paste0("leitað var í ", area.searched,"m ", "radíus")
+                
+                c(the.mean, area.searched, fjoldi.husa)
                 
         })
         
         streetMap <- eventReactive(input$goButton, {
-       
+        
                 mymap <- ggmap(get_map(c(punktar_react$v, punktar_react$s, punktar_react$a, punktar_react$n), source = "google"))
                 print(mymap)
         })
         
-        output$nText <- renderText({
-                ntext()
+        output$nText <- renderPrint({
+                
+                setn2 <- paste0("leitað var í ", ntext()[2],"m ", "radíus")
+                setn3 <- paste0("notast var við gögn frá ", ntext()[3], " húsum/íbúðum")
+                HTML(paste(ntext()[1], setn2, setn3, sep = "<br/>" ))
         })
     
         output$streetMap <- renderPlot({
                 streetMap() 
         })
+        
+        #output$search.area <- eventReactive(input$goButton, {
+        #        paste0("leitað var í ", area.searched,"m ", "radíus")
+        #})
         
 }
 

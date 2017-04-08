@@ -44,12 +44,13 @@ ui <- fluidPage(
               
                     
                     mainPanel("main panel", 
-         fluidRow(column(4, tableOutput("tafla1"),
-                tableOutput("tafla2")),
+         fluidRow(column(5, tableOutput("tafla1")),
+                column(5, tableOutput("tafla2"))),
          
-         column(8, plotOutput("plot"))),
+         fluidRow(plotOutput("plot")),
          
-         fluidRow(verbatimTextOutput("textinn"))
+         fluidRow(verbatimTextOutput("textinn")),
+         fluidRow(verbatimTextOutput("textinn2"))
           
           )))
 
@@ -74,15 +75,19 @@ server <- function(input, output) {
         
         rvk_mean <- mean(prep_trend$verd)
         rvk_fm_mean <- mean(prep_trend$fermverd)
-        
+        rvk_median <- median(prep_trend$verd)
+        rvk_fm_median <- median(prep_trend$fermverd)
         
         
         ### Trim the Data
         trimmed_data <- data_clean[data_clean$size > smallerfm & data_clean$size < biggerfm,]
         trimmed_data <- trimmed_data[trimmed_data$postnr == posturinn,]
+        mean.number <- nrow(trimmed_data)
         
         trimmed_mean <- mean(trimmed_data$verd)
         trimmed_fm_mean <- mean(trimmed_data$fermverd)
+        trimmed_median <- median(trimmed_data$verd)
+        trimmed_fm_median <- median(trimmed_data$fmverd)
         
         max_verd <- max(trimmed_data$verd)
         min_verd <- min(trimmed_data$verd)
@@ -90,10 +95,12 @@ server <- function(input, output) {
         ### gera dataframe úr þessu
         means <- c(rvk_mean, trimmed_mean)
         means.fm <- c(rvk_fm_mean, trimmed_fm_mean)
+        medians <- c(rvk_median, trimmed_median)
         
-        means.df <- data.frame(means, means.fm)
+        means.df <- data.frame(means, means.fm, medians)
         rownames(means.df) <- c("Meðaltal í Reykjavík", "Meðaltal í póstnúmeri")
-        colnames(means.df) <- c("meðalverð", "meðalfermetraverð")
+        colnames(means.df) <- c("Meðalverð", "Meðalfermetraverð", "Miðgildi")
+        means.df <- format(means.df, big.mark = ".", scientific = FALSE)
         
         ### get number of rooms
         herbergi.1 <- nrow(trimmed_data[trimmed_data$herbergi == 1,])
@@ -124,6 +131,7 @@ server <- function(input, output) {
         price.increase <- ((mean.in.10-mean.today)/mean.today)*100
         price.increase <- formatC(price.increase,digits=2, format="f") 
         texti.e.1ar <- paste0("Eftir 1 ár má áætla að verð verði búið að hækka um ", price.increase, "%")
+        texti.fjoldi.husa <- paste0("við úrvinnslu var unnið með gögn frá ", mean.number ," íbúðum/húsum")
         print(texti.e.1ar)
         
         options(scipen=5)
@@ -137,9 +145,10 @@ server <- function(input, output) {
                 theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
         
         
-        output$tafla1 <- renderTable({means.df})
+        output$tafla1 <- renderTable({means.df}, rownames = TRUE, align = "c")
         output$tafla2 <- renderTable({herbergin.df})
         output$textinn <- renderText({texti.e.1ar})
+        output$textinn2 <- renderText({texti.fjoldi.husa})
         output$plot <- renderPlot({p})
         
 })
